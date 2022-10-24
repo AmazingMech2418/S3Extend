@@ -151,7 +151,7 @@ const Scratch = {
       const methods = Object.getOwnPropertyNames(extConstructor);
       
       for(const method of methods) {
-        if(method == "constructor" || method = "getInfo") continue;
+        if(method == "constructor" || method == "getInfo") continue;
         S3Extend.prototype[method] = extConstructor[method];
       }
       
