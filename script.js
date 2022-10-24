@@ -19,6 +19,7 @@ function findReactComponent(element) {
 
 window.vm = findReactComponent(document.getElementsByClassName("stage-header_stage-size-row_14N65")[0]).props.vm;
 
+
 class S3Extend {
     constructor(runtime) {
         this.runtime = runtime;
@@ -146,14 +147,42 @@ const Scratch = {
   },
   extensions: {
     register: ext => {
+      const extConstructor = Object.getPrototypeOf(ext);
+      const methods = Object.getOwnPropertyNames(extConstructor);
+      
+      for(const method of methods) {
+        if(method == "constructor" || method = "getInfo") continue;
+        S3Extend.prototype[method] = extConstructor[method];
+      }
+      
+      const info = extConstructor.getInfo();
+      
+      let currentInfo = S3Extend.prototype.getInfo();
+      
+      currentInfo.blocks.push({
+        blockType: "button",
+        opcode:"btn" + info.id,
+        text: "Extension: " + info.name,
+        arguments: {}
+      });
+      
+      S3Extend.prototype["btn" + info.id] = function(){};
+      
+      currentInfo.blocks = currentInfo.blocks.concat(info.blocks);
+      
+      currentInfo.menus = Object.assign(currentInfo.menus, info.menus);
+      
+      S3Extend.prototype.getInfo = () => currentInfo;
+      
+      (function() {
+          let extensionInstance = new S3Extend(window.vm.extensionManager.runtime)
+          let serviceName = window.vm.extensionManager._registerInternalExtension(extensionInstance)
+          window.vm.extensionManager._loadedExtensions.set(extensionInstance.getInfo().id, serviceName)
+      })()
       
     }
   }
 };
 
 
-(function() {
-    var extensionInstance = new PrimeExt(window.vm.extensionManager.runtime)
-    var serviceName = window.vm.extensionManager._registerInternalExtension(extensionInstance)
-    window.vm.extensionManager._loadedExtensions.set(extensionInstance.getInfo().id, serviceName)
-})()
+
